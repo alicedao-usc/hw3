@@ -2,6 +2,7 @@
 #define HEAP_H
 #include <functional>
 #include <stdexcept>
+#include <vector>
 
 template <typename T, typename PComparator = std::less<T> >
 class Heap
@@ -59,15 +60,38 @@ public:
    */
   size_t size() const;
 
+  void trickleUp(int index);
+
+  void trickleDown(int index);
+  
+
 private:
   /// Add whatever helper functions and data members you need below
-
+  int leaves;
+  PComparator comp;
+  std::vector<T> v;
 
 
 
 };
 
 // Add implementation of member functions here
+template <typename T, typename PComparator>
+Heap<T,PComparator>::Heap(int m, PComparator c) : leaves(m), comp(c) {
+
+}
+
+template <typename T, typename PComparator>
+Heap<T,PComparator>::~Heap(){
+
+}
+
+template <typename T, typename PComparator>
+void Heap<T,PComparator>::push(const T& item){
+  v.push_back(item);
+  trickleUp(v.size() - 1);
+
+}
 
 
 // We will start top() for you to handle the case of 
@@ -81,12 +105,13 @@ T const & Heap<T,PComparator>::top() const
     // ================================
     // throw the appropriate exception
     // ================================
-
+    throw std::underflow_error("The heap is empty!");
 
   }
   // If we get here we know the heap has at least 1 item
   // Add code to return the top element
 
+  return v[0];
 
 
 }
@@ -102,14 +127,69 @@ void Heap<T,PComparator>::pop()
     // throw the appropriate exception
     // ================================
 
-
+    throw std::underflow_error("The heap is empty!");
   }
-
-
+  std::swap(v[0], v[v.size() - 1]);
+  v.pop_back();
+  trickleDown(0);
 
 }
 
+template <typename T, typename PComparator>
+bool Heap<T, PComparator>::empty() const{
+  if (v.size() == 0) {
+      return true;
+  } else
+      return false;
+}
 
+template <typename T, typename PComparator>
+size_t Heap<T, PComparator>::size() const{
+  size_t size = v.size();
+  return size;
+
+}
+
+template <typename T, typename PComparator>
+void Heap<T, PComparator>::trickleUp(int index){
+  int parent = (index - 1)/leaves;
+
+  if (index > 0 && comp(v[index], v[parent])) {
+      std::swap(v[index], v[parent]);
+      trickleUp(parent);
+  } 
+
+  else{
+    return;
+  }
+}
+
+template <typename T, typename PComparator>
+void Heap<T, PComparator>::trickleDown(int index){
+  int child = leaves * index + 1;
+
+  if (child >= (int)v.size()) {
+      return;
+  }
+
+  else {
+
+    int smallestChild = child;
+
+    for (int i = child; i < index * leaves + leaves; i++) {
+      if(i + 1 < (int)v.size()){
+        if (comp(v[i + 1], v[smallestChild])) {
+            smallestChild = i + 1;
+        }
+    }
+    }
+
+    if (comp(v[smallestChild], v[index])) {
+        std::swap(v[smallestChild], v[index]);
+        trickleDown(smallestChild);
+    }
+  }
+}
 
 #endif
 
